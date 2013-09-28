@@ -76,6 +76,7 @@ public class MainFrame extends JFrame {
 		messageList.add(m);
 		engine.tempMessage = s;
 		engine.sendRequest(s.length());
+		update();
 	}
 
 	//Refreshes the view
