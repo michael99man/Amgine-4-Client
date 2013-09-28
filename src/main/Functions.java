@@ -2,7 +2,10 @@ package main;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -82,5 +85,10 @@ public class Functions {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static String getTime(DateFormat df){
+		Date now = Calendar.getInstance().getTime();
+		return df.format(now);
 	}
 }
