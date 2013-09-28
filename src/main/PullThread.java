@@ -39,10 +39,7 @@ public class PullThread implements Runnable {
 				
 				
 				int length = Integer.parseInt(r.substring(r.indexOf("(") + 1, r.indexOf(")")));
-				System.out.println("INITIATING DHKE: " + length);
-				
-				parent.dhMode = true;
-				parent.dhe = new DHEngine(parent, length);
+				parent.main(length);
 			} else {
 				System.out.println("SPLIT: \n" + r);
 				String[] messages = r.split("\n");
@@ -60,12 +57,20 @@ public class PullThread implements Runnable {
 					String time = m.substring(
 							m.indexOf("(Time: ") + "(Time: ".length(),
 							m.length() - 1);
-
+					
 					System.out.println("RECEIVED MESSAGE - " + time + " - "
 							+ sender + ": \"" + mesg + "\"");
 
+					//This message will always be encrypted
 					Message msg = new Message(mesg, sender, date, time);
-					parent.push(msg);
+					//The chance that this will equal the ciphertext is so small it ain't even funny
+					if (!mesg.contains("has joined the chatroom!")){
+						parent.push(msg, true);
+					} else {
+						parent.push(msg, false);
+					}
+					
+					
 				}
 			}
 			try {

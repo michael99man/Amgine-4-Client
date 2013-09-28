@@ -66,10 +66,20 @@ public class DHEngine {
 
 			int value = GetValue();
 			System.out.println("FINISHED DHKE " + i + " time(s): " + value);
-			keyList[i] = value;
+			keyList[i-1] = value;
+			
+			
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}	
 		
 		System.out.println("FINISHED EVERYTHING!!");
+		mod = 0;
+		base = 0;
+		parent.addKey(keyList);
 	}
 
 	// Returns the other client's value (modPow their secret key)
@@ -106,7 +116,6 @@ public class DHEngine {
 
 	public void postInt() {
 		int value = modPow(base, mod);
-
 		ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
 		param.add(new BasicNameValuePair("POSTVALUE", String.valueOf(value)));
 		param.add(new BasicNameValuePair("NAME", parent.name));
@@ -128,28 +137,49 @@ public class DHEngine {
 
 	// To request for Mod and Base
 	public boolean request() {
-		ArrayList<NameValuePair> param1 = new ArrayList<NameValuePair>();
-		ArrayList<NameValuePair> param2 = new ArrayList<NameValuePair>();
-		param1.add(new BasicNameValuePair("REQUEST", "MOD"));
-		param1.add(new BasicNameValuePair("NAME", parent.name));
+		if (reqMod() && reqBase() || mod!=0 && base!=0){
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean reqMod(){
+		ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
+		param.add(new BasicNameValuePair("REQUEST", "MOD"));
+		param.add(new BasicNameValuePair("NAME", parent.name));
 
-		param2.add(new BasicNameValuePair("REQUEST", "BASE"));
-		param2.add(new BasicNameValuePair("NAME", parent.name));
+		String r = Functions.Get(param, URL);
 
-		String r1 = Functions.Get(param1, URL);
-		String r2 = Functions.Get(param2, URL);
 
-		// System.out.println("RESPONSE 1: " + r1 + " || RESPONSE 2: " + r2);
-
-		if (r1.equalsIgnoreCase("NOT_READY")
-				|| r2.equalsIgnoreCase("NOT_READY")) {
+		if (r.equalsIgnoreCase("NOT_READY")) {
 			return false;
 		} else {
 			try {
-				mod = Integer.parseInt(r1);
-				base = Integer.parseInt(r2);
+				mod = Integer.parseInt(r);
 			} catch (NumberFormatException e) {
-				System.out.println("AIYA: " + r1 + " || " + r2);
+				System.out.println("AIYA MOD: " + r);
+				return false;
+			}
+			return true;
+		}
+	}
+	
+	private boolean reqBase(){
+		ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
+		param.add(new BasicNameValuePair("REQUEST", "BASE"));
+		param.add(new BasicNameValuePair("NAME", parent.name));
+
+		String r = Functions.Get(param, URL);
+
+		// System.out.println("RESPONSE 1: " + r1 + " || RESPONSE : " + r);
+
+		if (r.equalsIgnoreCase("NOT_READY")) {
+			return false;
+		} else {
+			try {
+				base = Integer.parseInt(r);
+			} catch (NumberFormatException e) {
+				System.out.println("AIYA BASE: " + r);
 				return false;
 			}
 			return true;

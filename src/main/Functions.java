@@ -19,12 +19,14 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 public class Functions {
-
+	private static final String[] ALPHA_ARRAY = { "a", "b", "c", "d", "e", "f",
+			"g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+			"t", "u", "v", "w", "x", "y", "z" };
 
 	public static String Get(ArrayList<NameValuePair> headerList, String URL) {
 		HttpClient hc = HttpClientBuilder.create().build();
 		HttpGet httpGet = new HttpGet(URL);
-		
+
 		headerList.add(new BasicNameValuePair("Client", "true"));
 
 		for (NameValuePair nvp : headerList) {
@@ -43,12 +45,13 @@ public class Functions {
 		return null;
 	}
 
-	public static String Post(ArrayList<NameValuePair> postParameters, String URL) {
+	public static String Post(ArrayList<NameValuePair> postParameters,
+			String URL) {
 		HttpClient hc = HttpClientBuilder.create().build();
 		HttpPost httpPost = new HttpPost(URL);
 
 		postParameters.add(new BasicNameValuePair("Client", "true"));
-		
+
 		HttpResponse response = null;
 		try {
 			httpPost.setEntity(new UrlEncodedFormEntity(postParameters));
@@ -65,11 +68,12 @@ public class Functions {
 		return null;
 	}
 
-	//GETs, but returns the Response instead
-	public static HttpResponse GetResponse(ArrayList<NameValuePair> headerList, String URL) {
+	// GETs, but returns the Response instead
+	public static HttpResponse GetResponse(ArrayList<NameValuePair> headerList,
+			String URL) {
 		HttpClient hc = HttpClientBuilder.create().build();
 		HttpGet httpGet = new HttpGet(URL);
-		
+
 		headerList.add(new BasicNameValuePair("Client", "true"));
 
 		for (NameValuePair nvp : headerList) {
@@ -86,9 +90,79 @@ public class Functions {
 		}
 		return null;
 	}
-	
-	public static String getTime(DateFormat df){
+
+	public static String getTime(DateFormat df) {
 		Date now = Calendar.getInstance().getTime();
 		return df.format(now);
 	}
+
+
+	public static String encrypt(String tempMessage, int[] keyList) {
+		System.out.println("Encrypting: " + tempMessage);
+		String[] strArray = split(tempMessage);
+
+		String cipherText = "";
+
+		for (int i = 0; i < strArray.length; i++) {
+			int index = getLoc(strArray[i]) + keyList[i];
+			System.out.println(index);
+			while (index > 25) {
+				index -= 26;
+			}
+			cipherText += ALPHA_ARRAY[index];
+		}
+
+		return cipherText;
+	}
+
+	
+	public static String decrypt(String tempMessage, int[] keyList) {
+		System.out.println("Decrypting: " + tempMessage);
+		String[] strArray = split(tempMessage);
+		
+		String cipherText = "";
+
+		for (int i = 0; i < strArray.length; i++) {
+			int index = getLoc(strArray[i]) - keyList[i];
+			index = index % 26;
+
+			while (index < 0) {
+				index += 26;
+			}
+			cipherText += ALPHA_ARRAY[index];
+		}
+
+		return cipherText;
+	}
+	
+	
+	
+
+	// Returns the location of the given letter (0-25)
+	public static int getLoc(String s) {
+		int index = 0;
+		for (String str : ALPHA_ARRAY) {
+			if (str.equalsIgnoreCase(s)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
+		// Error
+	}
+	
+	
+	//This is to be used as a replacement to String.split("") which has a whitespace at [0]
+	public static String[] split(String s){
+		char[] c = s.toCharArray();
+		System.out.println("CARRAY LENGTH = " + c.length);
+		String[] str = new String[s.length()];
+		
+		for (int i = 0; i<s.length(); i ++){
+			str[i] = String.valueOf(c[i]);
+		}
+		System.out.println("STR LENGTH = " + str.length);
+		return str;
+	}
+
 }

@@ -28,6 +28,9 @@ public class MainFrame extends JFrame {
 	// Name of the last sender
 	private String lastSender = "";
 
+	//The only message to be preserved when the view is refreshed;
+	private String entryMessage;
+	
 	public LinkedList<Message> messageList = new LinkedList<Message>();
 
 	public MainFrame(Engine e) {
@@ -46,8 +49,9 @@ public class MainFrame extends JFrame {
 		textArea = new JTextArea();
 		textArea.setBounds(15, 15, 570, 355);
 		contentPane.add(textArea);
-		textArea.append(Functions.getTime(new SimpleDateFormat("(HH:mm:ss)"))
-				+ ": Welcome to chatroom \"" + chatroom + "\", " + engine.name);
+		entryMessage = Functions.getTime(new SimpleDateFormat("(HH:mm:ss)"))
+				+ ": Welcome to chatroom \"" + chatroom + "\", " + engine.name;
+		textArea.append(entryMessage);
 		textArea.append("\n");
 
 		textArea.setEditable(false);
@@ -76,7 +80,8 @@ public class MainFrame extends JFrame {
 
 	//Refreshes the view
 	public void update() {
-
+		textArea.setText(entryMessage);
+		textArea.append("\n");
 		for (Message m : messageList) {
 			if (lastSender.equalsIgnoreCase(m.sender)) {
 				textArea.append("\n");

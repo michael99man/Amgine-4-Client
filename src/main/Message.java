@@ -11,6 +11,12 @@ public class Message {
 
 	public String message;
 	public String sender;
+	
+	//Is true if this message doesn't have a key
+	public boolean noKey = true;
+	
+	//The key!
+	public int[] key;
 
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
 			"MM/dd/yyyy");
@@ -53,5 +59,9 @@ public class Message {
 		msg += ": ";
 		msg += message;
 		return msg;
+	}
+
+	public void decrypt(int[] key) {
+		message = (Functions.decrypt(message, key) + " (" + message + ")");
 	}
 }
