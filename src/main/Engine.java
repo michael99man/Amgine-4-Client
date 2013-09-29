@@ -12,8 +12,9 @@ import org.apache.http.message.BasicNameValuePair;
 public class Engine {
 
 	// The url of the MainServlet
-	public static final String BASEURL = "http://localhost:8080/Amgine_4/";
-
+	//public static final String BASEURL = "http://localhost:8080/Amgine_4/";
+	public static final String BASEURL = "https://amgine4-michael99man.rhcloud.com/";
+	
 	// The url of the chatroom
 	public String URL;
 

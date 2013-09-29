@@ -155,13 +155,11 @@ public class Functions {
 	//This is to be used as a replacement to String.split("") which has a whitespace at [0]
 	public static String[] split(String s){
 		char[] c = s.toCharArray();
-		System.out.println("CARRAY LENGTH = " + c.length);
 		String[] str = new String[s.length()];
 		
 		for (int i = 0; i<s.length(); i ++){
 			str[i] = String.valueOf(c[i]);
 		}
-		System.out.println("STR LENGTH = " + str.length);
 		return str;
 	}
 

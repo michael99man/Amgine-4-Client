@@ -53,7 +53,7 @@ public class DHEngine {
 			while (!request()) {
 				// While the server is not ready...
 				try {
-					Thread.sleep(rand.nextInt(200));
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -70,7 +70,7 @@ public class DHEngine {
 			
 			
 			try {
-				Thread.sleep(500);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -96,7 +96,7 @@ public class DHEngine {
 				// System.out.println("SERVLET NOT READY");
 				try {
 					// To prevent jams
-					Thread.sleep(rand.nextInt(200));
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
