@@ -11,12 +11,14 @@ public class Message {
 
 	public String message;
 	public String sender;
+	public boolean encrypted;
 	
 	//Is true if this message doesn't have a key
 	public boolean noKey = true;
 	
 	//The key!
 	public int[] key;
+	public String cipherText;
 
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
 			"MM/dd/yyyy");
@@ -31,14 +33,16 @@ public class Message {
 		message = msg;
 		time = Functions.getTime(TIME_FORMAT);
 		date = Functions.getTime(DATE_FORMAT);
+		encrypted = false;
 	}
 
 	// To be used by messages received by client
-	public Message(String msg, String u, String date, String time) {
+	public Message(String msg, String u, String date, String time, boolean encrypted) {
 		sender = u;
 		message = msg;
 		this.date = date;
 		this.time = time;
+		this.encrypted = encrypted;
 	}
 
 	// To be used by MainFrame
@@ -58,10 +62,14 @@ public class Message {
 
 		msg += ": ";
 		msg += message;
+		if (encrypted){
+			msg += "(" + cipherText + ")";
+		}
 		return msg;
 	}
 
 	public void decrypt(int[] key) {
-		message = (Functions.decrypt(message, key) + " (" + message + ")");
+		cipherText = message;
+		message = (Functions.decrypt(message, key));
 	}
 }

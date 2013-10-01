@@ -30,7 +30,9 @@ public class StartWindow extends JFrame {
 	private static Choice choice;
 
 	private JFrame instance = this;
-
+	
+	private JFrame logFrame = new JFrame("Event Log");
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -44,9 +46,19 @@ public class StartWindow extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
+	//Opens the response log
+	public void openWindow(){
+		logFrame.setBounds(100,100,400,250);
+		logFrame.setVisible(true);
+		logFrame.setTitle("Event Log");
+		//Do more stuff here
+		//Show errors, etc
+		
+		//TODO: Implement commands
+			//e.g. show open chatrooms
+		//TODO: Password protected chatrooms
+	}
+	
 	public StartWindow() {
 		setTitle("AMGINE 4");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -128,9 +140,15 @@ public class StartWindow extends JFrame {
 		StartButton.setBounds(18, 130, 258, 40);
 		contentPane.add(StartButton);
 
-		JButton HelpButton = new JButton("?");
-		HelpButton.setFont(new Font("AppleGothic", Font.BOLD, 27));
-		HelpButton.setBounds(202, 70, 75, 38);
-		contentPane.add(HelpButton);
+		JButton shellButton = new JButton("?");
+		shellButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				openWindow();
+			}
+		});
+		shellButton.setFont(new Font("AppleGothic", Font.BOLD, 27));
+		shellButton.setBounds(202, 70, 75, 38);
+		contentPane.add(shellButton);
 	}
 }

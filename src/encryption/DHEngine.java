@@ -67,7 +67,7 @@ public class DHEngine {
 			int value = GetValue();
 			System.out.println("FINISHED DHKE " + i + " time(s): " + value);
 			keyList[i-1] = value;
-			
+			parent.addKey(value);
 			
 			try {
 				Thread.sleep(300);
@@ -79,7 +79,9 @@ public class DHEngine {
 		System.out.println("FINISHED EVERYTHING!!");
 		mod = 0;
 		base = 0;
-		parent.addKey(keyList);
+		
+		// Tells Thread to start pulling again
+		parent.dhMode = false;
 	}
 
 	// Returns the other client's value (modPow their secret key)

@@ -48,7 +48,10 @@ public class PullThread implements Runnable {
 					// Parse each message in returned string
 					System.out.println("PARSING: " + m);
 					String mesg = m.substring(m.indexOf("(Message: ")
-							+ "(Message: ".length(), m.indexOf("(Sender: ") - 1);
+							+ "(Message: ".length(), m.indexOf("(Encrypted: ") - 1);
+					String encrypt = m.substring(m.indexOf("(Encrypted: ")
+							+ "(Encrypted: ".length(), m.indexOf("(Sender: ") - 1);
+					boolean encrypted = encrypt.equals("TRUE");
 					String sender = m.substring(m.indexOf("(Sender: ")
 							+ "(Sender: ".length(), m.indexOf("(Date: ") - 1);
 					String date = m.substring(
@@ -62,15 +65,8 @@ public class PullThread implements Runnable {
 							+ sender + ": \"" + mesg + "\"");
 
 					//This message will always be encrypted
-					Message msg = new Message(mesg, sender, date, time);
-					//The chance that this will equal the ciphertext is so small it ain't even funny
-					if (!mesg.contains("has joined the chatroom!")){
-						parent.push(msg, true);
-					} else {
-						parent.push(msg, false);
-					}
-					
-					
+					Message msg = new Message(mesg, sender, date, time, encrypted);
+					parent.push(msg);
 				}
 			}
 			try {

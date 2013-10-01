@@ -12,9 +12,9 @@ import org.apache.http.message.BasicNameValuePair;
 public class Engine {
 
 	// The url of the MainServlet
-	//public static final String BASEURL = "http://localhost:8080/Amgine_4/";
+	// public static final String BASEURL = "http://localhost:8080/Amgine_4/";
 	public static final String BASEURL = "https://amgine4-michael99man.rhcloud.com/";
-	
+
 	// The url of the chatroom
 	public String URL;
 
@@ -36,7 +36,7 @@ public class Engine {
 	public DHEngine dhe;
 
 	// This list holds all keys ever generated
-	public LinkedList<int[]> keyList = new LinkedList<int[]>();
+	public LinkedList<Integer> keyList = new LinkedList<Integer>();
 
 	public void setMainFrame(MainFrame mf) {
 		parent = mf;
@@ -47,10 +47,11 @@ public class Engine {
 	}
 
 	// ONLY TO BE USED TO SEND AN ENCRYPTED STRING
-	public void send(String s) {
+	public void send(String s, boolean e) {
 		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
 		al.add(new BasicNameValuePair("SEND_MESSAGE", s));
 		al.add(new BasicNameValuePair("NAME", name));
+		al.add(new BasicNameValuePair("ENCRYPTED", e ? "TRUE" : "FALSE"));
 		System.out.println(Functions.Post(al, URL));
 	}
 
@@ -68,7 +69,7 @@ public class Engine {
 	// Tells Servlet that client wants to send a message of length x
 	public void sendRequest(int x) {
 		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
-		al.add(new BasicNameValuePair("MESSAGE_LENGTH", String.valueOf(x)));
+		al.add(new BasicNameValuePair("AMOUNT", String.valueOf(x)));
 		al.add(new BasicNameValuePair("NAME", name));
 		System.out.println(Functions.Post(al, URL));
 	}
@@ -119,18 +120,21 @@ public class Engine {
 	}
 
 	// Received message from thread
-	public void push(Message mesg, boolean encrypted) {
-		if (encrypted) {
+	public void push(Message mesg) {
+		if (mesg.encrypted) {
 			// Message is encrypted!
 			int i = parent.messageList.size();
 
-			// At this point, the keyList SHOULD BE the same length as the
-			// messageList (Entry message (not encrypted) and newest key
-			// (message has not been added))
-			int[] key = keyList.get(i - 1);
-
+			// Use the first i number of keys to decrypt, then delete them from the keylist
+			
+			int[] key = new int[i];
+			for (int j = 0; j<i; j++){
+				key[j] = keyList.get(0);
+				keyList.poll();
+			}
+			
 			if (key.length != mesg.message.length()) {
-				System.out.println("WTFFFFFF");
+				System.out.println("??");
 				return;
 			}
 			mesg.decrypt(key);
@@ -139,22 +143,12 @@ public class Engine {
 		parent.update();
 	}
 
-	public void addKey(int[] keyList) {
-		this.keyList.add(keyList);
-		// Tells client to start pulling again
-		dhMode = false;
-
-		// If you were to send the message, encrypt it and send
-		if (!tempMessage.equals("")) {
-
-			String cipherText = Functions.encrypt(tempMessage, keyList);
-			send(cipherText);
-			System.out.println("SENT: " + cipherText);
-			tempMessage = "";
-		}
-
+	public void addKey(int key) {
+		this.keyList.add(key);
 		printKeys();
+		parent.update();
 	}
+	
 
 	public void main(int length) {
 		System.out.println("INITIATING DHKE: " + length);
@@ -165,16 +159,14 @@ public class Engine {
 	public void printKeys() {
 		System.out.println("KEYS: ");
 		// Prints all the keys
-		for (int[] ia : keyList) {
-			String s = "[";
-			for (int i : ia) {
-				s += i;
-				s += ",";
-			}
-			s = s.substring(0, s.length() - 1);
-			s += "]";
-			System.out.println(s);
-			System.out.println();
+		String s = "[";
+		for (int i : keyList) {
+			s += i;
+			s += ",";
 		}
+		s = s.substring(0, s.length() - 1);
+		s += "]";
+		System.out.println(s);
 	}
+
 }
