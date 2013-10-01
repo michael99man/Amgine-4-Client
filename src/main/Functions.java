@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -148,7 +149,7 @@ public class Functions {
 			index++;
 		}
 		return -1;
-		// Error
+		// Invalid character (Used in clearIllegal())
 	}
 	
 	
@@ -159,6 +160,17 @@ public class Functions {
 		
 		for (int i = 0; i<s.length(); i ++){
 			str[i] = String.valueOf(c[i]);
+		}
+		return str;
+	}
+
+	//Fixes illegal characters (only lets alphabetical letters through)
+	public static String clearIllegal(String s) {
+		String str = "";
+		for (char c: s.toCharArray()){
+			if (getLoc(String.valueOf(c)) != -1){
+				str+=(c);
+			}
 		}
 		return str;
 	}

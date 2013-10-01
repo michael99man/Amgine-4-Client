@@ -123,7 +123,7 @@ public class Engine {
 	public void push(Message mesg) {
 		if (mesg.encrypted) {
 			// Message is encrypted!
-			int i = parent.messageList.size();
+			int i = mesg.cipherText.length();
 
 			// Use the first i number of keys to decrypt, then delete them from the keylist
 			
@@ -134,7 +134,7 @@ public class Engine {
 			}
 			
 			if (key.length != mesg.message.length()) {
-				System.out.println("??");
+				System.out.println("Dafk");
 				return;
 			}
 			mesg.decrypt(key);

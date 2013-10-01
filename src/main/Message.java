@@ -43,6 +43,11 @@ public class Message {
 		this.date = date;
 		this.time = time;
 		this.encrypted = encrypted;
+		
+		//Is overriden if message is sent by THIS client
+		if (encrypted){
+			cipherText = message;
+		}
 	}
 
 	// To be used by MainFrame
@@ -63,7 +68,7 @@ public class Message {
 		msg += ": ";
 		msg += message;
 		if (encrypted){
-			msg += "(" + cipherText + ")";
+			msg += "  (" + cipherText + ")";
 		}
 		return msg;
 	}

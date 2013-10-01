@@ -2,6 +2,7 @@ package gui;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
@@ -33,9 +34,9 @@ public class MainFrame extends JFrame {
 	private JTextArea keyField;
 
 	private JScrollPane scrollPane;
-	
+
 	private JCheckBox encryptBox;
-	
+
 	private String chatroom;
 	// Name of the last sender
 	private String lastSender = "";
@@ -47,7 +48,6 @@ public class MainFrame extends JFrame {
 	private JTextField amountField;
 
 	public MainFrame(Engine e) {
-
 
 		engine = e;
 		chatroom = e.chatroom;
@@ -69,12 +69,12 @@ public class MainFrame extends JFrame {
 		textArea.append("\n");
 
 		textArea.setEditable(false);
-		
+
 		contentPane.add(textArea);
 		scrollPane = new JScrollPane(textArea);
 		scrollPane.setBounds(textArea.getBounds());
 		contentPane.add(scrollPane);
-		
+
 		inputField = new JTextField();
 		inputField.addKeyListener(new KeyAdapter() {
 			@Override
@@ -133,7 +133,8 @@ public class MainFrame extends JFrame {
 			public void mouseClicked(MouseEvent arg0) {
 				if (amountField.getText().length() > 0) {
 					if (amountField.getText().length() > 0) {
-						engine.sendRequest(Integer.parseInt(amountField.getText()));
+						engine.sendRequest(Integer.parseInt(amountField
+								.getText()));
 						amountField.setText("");
 					}
 				}
@@ -152,39 +153,45 @@ public class MainFrame extends JFrame {
 		encryptBox.setFont(new Font("AppleGothic", Font.PLAIN, 13));
 		encryptBox.setBounds(507, 397, 82, 23);
 		contentPane.add(encryptBox);
-		
+
 		update();
 	}
 
 	// Sends the plaintext
 	private void send(String s) {
-		if (s.length() > engine.keyList.size()){
-			textArea.append("NOT ENOUGH KEYS TO ENCRYPT (Need " + (s.length() - engine.keyList.size()) + " more keys)");
+		if (s.length() > engine.keyList.size()) {
 			textArea.append("\n");
+			textArea.append("NOT ENOUGH KEYS TO ENCRYPT (Need "
+					+ (s.length() - engine.keyList.size()) + " more keys)");
+			textArea.append("\n");
+			textArea.append("\n");
+			return;
 		}
-			
+		
+		s = Functions.clearIllegal(s);
+				
 		Message m = new Message(s, engine.name);
-		if(encryptBox.isSelected()){
-			//Encrypt
+		if (encryptBox.isSelected()) {
+			// Encrypt
 			int l = s.length();
 			int[] key = new int[l];
-			
+
 			engine.printKeys();
-			for (int i = 0; i<l; i++){
+			for (int i = 0; i < l; i++) {
 				key[i] = engine.keyList.get(0);
 				engine.keyList.poll();
 			}
 			System.out.println("Removed first " + l + "items of KeyList");
 			engine.printKeys();
 			update();
-			
+
 			System.out.println("Encrypting " + s + " with: ");
-			for (int i: key){
+			for (int i : key) {
 				System.out.print(i);
 				System.out.print(",");
 			}
 			System.out.println();
-			
+
 			String cipherText = Functions.encrypt(s, key);
 			System.out.println(s + " --> " + cipherText);
 			m.cipherText = cipherText;
@@ -214,7 +221,15 @@ public class MainFrame extends JFrame {
 				lastSender = m.sender;
 			}
 		}
-		keyField.setText("");
+		//Focuses
+		scrollPane.grabFocus();
+		
+		// Scrolls the scrollPane to the bottom
+		JScrollBar vertical = scrollPane.getVerticalScrollBar();
+		vertical.setValue(vertical.getMaximum());
+
+		keyField.setText("Keys: (" + engine.keyList.size() + ")");
+		keyField.append("\n");
 		for (int i : engine.keyList) {
 			keyField.append(String.valueOf(i));
 			keyField.append("\n");
