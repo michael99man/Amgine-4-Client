@@ -159,20 +159,22 @@ public class MainFrame extends JFrame {
 
 	// Sends the plaintext
 	private void send(String s) {
-		if (s.length() > engine.keyList.size()) {
-			textArea.append("\n");
-			textArea.append("NOT ENOUGH KEYS TO ENCRYPT (Need "
-					+ (s.length() - engine.keyList.size()) + " more keys)");
-			textArea.append("\n");
-			textArea.append("\n");
-			return;
-		}
-		
 		s = Functions.clearIllegal(s);
-				
+		
 		Message m = new Message(s, engine.name);
 		if (encryptBox.isSelected()) {
 			// Encrypt
+			
+			//Terminates if we don't have enough keys
+			if (s.length() > engine.keyList.size()) {
+				textArea.append("\n");
+				textArea.append("NOT ENOUGH KEYS TO ENCRYPT (Need "
+						+ (s.length() - engine.keyList.size()) + " more keys)");
+				textArea.append("\n");
+				textArea.append("\n");
+				return;
+			}
+			
 			int l = s.length();
 			int[] key = new int[l];
 
@@ -194,6 +196,8 @@ public class MainFrame extends JFrame {
 
 			String cipherText = Functions.encrypt(s, key);
 			System.out.println(s + " --> " + cipherText);
+			
+			//Manually does this
 			m.cipherText = cipherText;
 			m.encrypted = true;
 			engine.send(cipherText, true);
