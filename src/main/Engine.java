@@ -38,6 +38,9 @@ public class Engine {
 	// This list holds all keys ever generated
 	public LinkedList<Integer> keyList = new LinkedList<Integer>();
 
+	//Holds all messages
+	public LinkedList<Message> messageList = new LinkedList<Message>();
+	
 	public void setMainFrame(MainFrame mf) {
 		parent = mf;
 	}
@@ -58,7 +61,7 @@ public class Engine {
 	public void formKey(String s) {
 		sendRequest(s.length());
 		Message m = new Message(s, name);
-		parent.messageList.add(m);
+		messageList.add(m);
 
 		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
 		al.add(new BasicNameValuePair("SEND_MESSAGE", s));
@@ -139,21 +142,26 @@ public class Engine {
 			}
 			mesg.decrypt(key);
 		}
-		parent.messageList.add(mesg);
-		parent.update();
+		parent.chatPanel.addMessage(mesg);
+		messageList.add(mesg);
+		parent.updateKeys();
 	}
 
 	public void addKey(int key) {
+		//Lose complexity here! 
+		//Mod 95 to fit ASCII System!
+		key = key % 95;
 		this.keyList.add(key);
 		printKeys();
-		parent.update();
+		parent.updateKeys();
 	}
 	
-
-	public void main(int length) {
-		System.out.println("INITIATING DHKE: " + length);
+	public void dhke(int amount) {
+		System.out.println("INITIATING DHKE: " + amount);
 		dhMode = true;
-		dhe = new DHEngine(this, length);
+		parent.progressBar.setIndeterminate(false);
+		parent.progressBar.setMaximum(amount);
+		dhe = new DHEngine(this, amount, parent.progressBar);
 	}
 
 	public void printKeys() {

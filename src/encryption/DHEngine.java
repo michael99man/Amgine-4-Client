@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Random;
 
+import javax.swing.JProgressBar;
+
 import main.Engine;
 import main.Functions;
 
@@ -21,20 +23,21 @@ public class DHEngine {
 	public Engine parent;
 
 	private static Random rand = new Random();
-	
-	
+
+	private JProgressBar js;
+
 	private String URL;
-	
+
 	private int[] keyList;
-	
+
 	// Will either be called from the sendRequest() method OR the PullThread
-	//x is the amount of times to perform DHKE
-	public DHEngine(Engine e, int x) {
+	// x is the amount of times to perform DHKE
+	public DHEngine(Engine e, int x, JProgressBar js) {
 		parent = e;
 		keyList = new int[x];
 		URL = e.URL + "/DHKE";
-		
-		//Always call last in constructor!
+		this.js = js;
+		// Always call last in constructor!
 		Main(x);
 	}
 
@@ -66,20 +69,24 @@ public class DHEngine {
 
 			int value = GetValue();
 			System.out.println("FINISHED DHKE " + i + " time(s): " + value);
-			keyList[i-1] = value;
+			keyList[i - 1] = value;
 			parent.addKey(value);
+
+			js.setValue(i);
+			js.setString(i + "/" + x);
 			
 			try {
-				Thread.sleep(300);
+				if (i<x) Thread.sleep(300);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}	
-		
+		}
+
 		System.out.println("FINISHED EVERYTHING!!");
+		js.setString("Done!");
 		mod = 0;
 		base = 0;
-		
+
 		// Tells Thread to start pulling again
 		parent.dhMode = false;
 	}
@@ -139,19 +146,18 @@ public class DHEngine {
 
 	// To request for Mod and Base
 	public boolean request() {
-		if (reqMod() && reqBase() || mod!=0 && base!=0){
+		if (reqMod() && reqBase() || mod != 0 && base != 0) {
 			return true;
 		}
 		return false;
 	}
-	
-	private boolean reqMod(){
+
+	private boolean reqMod() {
 		ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
 		param.add(new BasicNameValuePair("REQUEST", "MOD"));
 		param.add(new BasicNameValuePair("NAME", parent.name));
 
 		String r = Functions.Get(param, URL);
-
 
 		if (r.equalsIgnoreCase("NOT_READY")) {
 			return false;
@@ -165,8 +171,8 @@ public class DHEngine {
 			return true;
 		}
 	}
-	
-	private boolean reqBase(){
+
+	private boolean reqBase() {
 		ArrayList<NameValuePair> param = new ArrayList<NameValuePair>();
 		param.add(new BasicNameValuePair("REQUEST", "BASE"));
 		param.add(new BasicNameValuePair("NAME", parent.name));

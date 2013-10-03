@@ -1,9 +1,11 @@
 package gui;
 
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
 import main.Engine;
@@ -15,13 +17,12 @@ import javax.swing.JTextField;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import javax.swing.JButton;
 import javax.swing.JLabel;
+
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.JCheckBox;
+import javax.swing.JProgressBar;
 
 public class MainFrame extends JFrame {
 
@@ -33,19 +34,22 @@ public class MainFrame extends JFrame {
 	private JTextArea textArea;
 	private JTextArea keyField;
 
-	private JScrollPane scrollPane;
+	private JScrollPane panelScroller;
+	public ChatPanel chatPanel;
 
 	private JCheckBox encryptBox;
 
 	private String chatroom;
+
 	// Name of the last sender
 	private String lastSender = "";
 
 	// The only message to be preserved when the view is refreshed;
-	private String entryMessage;
+	public String entryMessage;
 
-	public LinkedList<Message> messageList = new LinkedList<Message>();
 	private JTextField amountField;
+
+	public JProgressBar progressBar;
 
 	public MainFrame(Engine e) {
 
@@ -61,19 +65,27 @@ public class MainFrame extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		textArea = new JTextArea();
-		textArea.setBounds(15, 15, 461, 367);
+		/**
+		 * textArea = new JTextArea(); textArea.setBounds(15, 15, 461, 367);
+		 * textArea.append(entryMessage); textArea.append("\n");
+		 * 
+		 * textArea.setEditable(false);
+		 **/
+
 		entryMessage = Functions.getTime(new SimpleDateFormat("(HH:mm:ss)"))
 				+ ": Welcome to chatroom \"" + chatroom + "\", " + engine.name;
-		textArea.append(entryMessage);
-		textArea.append("\n");
 
-		textArea.setEditable(false);
+		panelScroller = new JScrollPane(
+				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-		contentPane.add(textArea);
-		scrollPane = new JScrollPane(textArea);
-		scrollPane.setBounds(textArea.getBounds());
-		contentPane.add(scrollPane);
+		// contentPane.add(textArea);
+		chatPanel = new ChatPanel(engine, this);
+		chatPanel.setPreferredSize(new Dimension(450, 360));
+
+		panelScroller.setViewportView(chatPanel);
+		panelScroller.setBounds(15, 15, 460, 360);
+		contentPane.add(panelScroller);
 
 		inputField = new JTextField();
 		inputField.addKeyListener(new KeyAdapter() {
@@ -82,6 +94,7 @@ public class MainFrame extends JFrame {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
 					send(inputField.getText());
 					inputField.setText("");
+					inputField.requestFocus();
 				}
 			}
 		});
@@ -95,54 +108,29 @@ public class MainFrame extends JFrame {
 		keyField.setBounds(488, 60, 101, 270);
 		contentPane.add(keyField);
 
-		amountField = new JTextField();
+		amountField = new JFormattedTextField();
+		amountField.setFont(new Font("AppleGothic", Font.BOLD, 15));
 		amountField.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-					engine.sendRequest(Integer.parseInt(amountField.getText()));
-					amountField.setText("");
-				} else {
-					if (arg0.getKeyCode() == KeyEvent.VK_0
-							|| arg0.getKeyCode() == KeyEvent.VK_1
-							|| arg0.getKeyCode() == KeyEvent.VK_2
-							|| arg0.getKeyCode() == KeyEvent.VK_3
-							|| arg0.getKeyCode() == KeyEvent.VK_4
-							|| arg0.getKeyCode() == KeyEvent.VK_5
-							|| arg0.getKeyCode() == KeyEvent.VK_6
-							|| arg0.getKeyCode() == KeyEvent.VK_7
-							|| arg0.getKeyCode() == KeyEvent.VK_8
-							|| arg0.getKeyCode() == KeyEvent.VK_9) {
-						if (amountField.getText().length() >= 2) {
-							amountField.setText(amountField.getText()
-									.substring(0, 1));
+					if (amountField.getText().length() > 0) {
+						if (amountField.getText().length() > 0) {
+							progressBar.setIndeterminate(true);
+							progressBar.setMaximum(Integer.parseInt(amountField
+									.getText()));
+							progressBar.setString("Waiting...");
+							engine.sendRequest(Integer.parseInt(amountField
+									.getText()));
+							amountField.setText("");
 						}
-					} else if (arg0.getKeyCode() != KeyEvent.VK_DELETE) {
-						amountField.setText("");
 					}
 				}
 			}
 		});
 		amountField.setBounds(488, 362, 101, 28);
+		amountField.setColumns(2);
 		contentPane.add(amountField);
-		amountField.setColumns(10);
-
-		JButton generateButton = new JButton("Generate");
-		generateButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				if (amountField.getText().length() > 0) {
-					if (amountField.getText().length() > 0) {
-						engine.sendRequest(Integer.parseInt(amountField
-								.getText()));
-						amountField.setText("");
-					}
-				}
-			}
-		});
-		generateButton.setFont(new Font("AppleGothic", Font.BOLD, 15));
-		generateButton.setBounds(488, 333, 101, 29);
-		contentPane.add(generateButton);
 
 		JLabel KeyLabel = new JLabel("Keys");
 		KeyLabel.setFont(new Font("AppleGothic", Font.BOLD | Font.ITALIC, 30));
@@ -154,18 +142,23 @@ public class MainFrame extends JFrame {
 		encryptBox.setBounds(507, 397, 82, 23);
 		contentPane.add(encryptBox);
 
-		update();
+		progressBar = new JProgressBar();
+		progressBar.setFont(new Font("AppleGothic", Font.PLAIN, 14));
+		progressBar.setBounds(487, 335, 101, 20);
+		progressBar.setStringPainted(true);
+		progressBar.setString(null);
+		contentPane.add(progressBar);
 	}
 
 	// Sends the plaintext
 	private void send(String s) {
 		s = Functions.clearIllegal(s);
-		
+
 		Message m = new Message(s, engine.name);
 		if (encryptBox.isSelected()) {
 			// Encrypt
-			
-			//Terminates if we don't have enough keys
+
+			// Terminates if we don't have enough keys
 			if (s.length() > engine.keyList.size()) {
 				textArea.append("\n");
 				textArea.append("NOT ENOUGH KEYS TO ENCRYPT (Need "
@@ -174,7 +167,7 @@ public class MainFrame extends JFrame {
 				textArea.append("\n");
 				return;
 			}
-			
+
 			int l = s.length();
 			int[] key = new int[l];
 
@@ -185,7 +178,6 @@ public class MainFrame extends JFrame {
 			}
 			System.out.println("Removed first " + l + "items of KeyList");
 			engine.printKeys();
-			update();
 
 			System.out.println("Encrypting " + s + " with: ");
 			for (int i : key) {
@@ -196,47 +188,34 @@ public class MainFrame extends JFrame {
 
 			String cipherText = Functions.encrypt(s, key);
 			System.out.println(s + " --> " + cipherText);
-			
-			//Manually does this
+
+			// Manually does this
 			m.cipherText = cipherText;
 			m.encrypted = true;
 			engine.send(cipherText, true);
 		} else {
 			engine.send(s, false);
 		}
-		messageList.add(m);
-		update();
+		engine.messageList.add(m);
+		chatPanel.addMessage(m);
+		updateKeys();
 	}
 
 	// Refreshes the view
-	public void update() {
-		textArea.setText(entryMessage);
-		textArea.append("\n");
-		for (Message m : messageList) {
-			if (lastSender.equalsIgnoreCase(m.sender)) {
-				textArea.append("\n");
-				textArea.append(m.format());
-			} else {
-				textArea.append("\n");
-				textArea.append("\n");
-				textArea.append(m.sender);
-				textArea.append("\n");
-				textArea.append(m.format());
-				lastSender = m.sender;
-			}
-		}
-		//Focuses
-		scrollPane.grabFocus();
-		
-		// Scrolls the scrollPane to the bottom
-		JScrollBar vertical = scrollPane.getVerticalScrollBar();
-		vertical.setValue(vertical.getMaximum());
-
+	public void updateKeys() {
 		keyField.setText("Keys: (" + engine.keyList.size() + ")");
 		keyField.append("\n");
 		for (int i : engine.keyList) {
 			keyField.append(String.valueOf(i));
 			keyField.append("\n");
 		}
+	}
+
+	public void verticalMax() {
+		// Focuses
+		panelScroller.grabFocus();
+		// Scrolls the scrollPane to the bottom
+		JScrollBar vertical = panelScroller.getVerticalScrollBar();
+		vertical.setValue(vertical.getMaximum());
 	}
 }

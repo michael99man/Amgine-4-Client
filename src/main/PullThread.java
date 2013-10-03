@@ -33,14 +33,10 @@ public class PullThread implements Runnable {
 				//Nothing new...
 			} else if (r.contains("DHKE_READY")){
 				//Detects that servlet has returned a message to initiate DHKE
-
-				System.out.println("PARSING: " + r);
 				
-				
-				int length = Integer.parseInt(r.substring(r.indexOf("(") + 1, r.indexOf(")")));
-				parent.main(length);
+				int amount = Integer.parseInt(r.substring(r.indexOf("(") + 1, r.indexOf(")")));
+				parent.dhke(amount);
 			} else {
-				System.out.println("SPLIT: \n" + r);
 				String[] messages = r.split("\n");
 
 				for (String m : messages) {
