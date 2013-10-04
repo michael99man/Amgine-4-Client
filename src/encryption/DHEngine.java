@@ -83,7 +83,7 @@ public class DHEngine {
 		}
 
 		System.out.println("FINISHED EVERYTHING!!");
-		js.setString("Done!");
+		js.setString("Ready!");
 		mod = 0;
 		base = 0;
 

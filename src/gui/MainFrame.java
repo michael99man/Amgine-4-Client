@@ -53,6 +53,9 @@ public class MainFrame extends JFrame {
 
 	public MainFrame(Engine e) {
 
+		// Shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownThread(this)));
+
 		engine = e;
 		chatroom = e.chatroom;
 
@@ -64,13 +67,6 @@ public class MainFrame extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-
-		/**
-		 * textArea = new JTextArea(); textArea.setBounds(15, 15, 461, 367);
-		 * textArea.append(entryMessage); textArea.append("\n");
-		 * 
-		 * textArea.setEditable(false);
-		 **/
 
 		entryMessage = Functions.getTime(new SimpleDateFormat("(HH:mm:ss)"))
 				+ ": Welcome to chatroom \"" + chatroom + "\", " + engine.name;
@@ -92,9 +88,11 @@ public class MainFrame extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-					send(inputField.getText());
-					inputField.setText("");
-					inputField.requestFocus();
+					if (engine.canSend()) {
+						send(inputField.getText());
+						inputField.setText("");
+						inputField.requestFocus();
+					}
 				}
 			}
 		});
@@ -146,7 +144,7 @@ public class MainFrame extends JFrame {
 		progressBar.setFont(new Font("AppleGothic", Font.PLAIN, 14));
 		progressBar.setBounds(487, 335, 101, 20);
 		progressBar.setStringPainted(true);
-		progressBar.setString(null);
+		progressBar.setString("Ready");
 		contentPane.add(progressBar);
 	}
 
@@ -217,5 +215,16 @@ public class MainFrame extends JFrame {
 		// Scrolls the scrollPane to the bottom
 		JScrollBar vertical = panelScroller.getVerticalScrollBar();
 		vertical.setValue(vertical.getMaximum());
+	}
+
+	public void focus() {
+		// Gives the inputField focus again
+		inputField.requestFocusInWindow();
+	}
+	
+	//Called when window is closing
+	public void exit(){
+		System.out.println("Application is quitting!");
+		engine.leaveChatroom();
 	}
 }

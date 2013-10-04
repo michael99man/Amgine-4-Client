@@ -123,7 +123,6 @@ public class StartWindow extends JFrame {
 				if (success) {
 					//Creates a MainFrame and closes the window
 					MainFrame mf = new MainFrame(e);
-					
 					e.setMainFrame(mf);
 					
 					//Starts listening

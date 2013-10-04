@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Toolkit;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
@@ -61,7 +62,8 @@ public class PullThread implements Runnable {
 
 					//This message will always be encrypted
 					Message msg = new Message(mesg, sender, date, time, encrypted);
-					parent.push(msg);
+					Toolkit.getDefaultToolkit().beep();
+					parent.push(msg);			
 				}
 			}
 			try {

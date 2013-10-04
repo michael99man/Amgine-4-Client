@@ -38,9 +38,9 @@ public class Engine {
 	// This list holds all keys ever generated
 	public LinkedList<Integer> keyList = new LinkedList<Integer>();
 
-	//Holds all messages
+	// Holds all messages
 	public LinkedList<Message> messageList = new LinkedList<Message>();
-	
+
 	public void setMainFrame(MainFrame mf) {
 		parent = mf;
 	}
@@ -128,34 +128,35 @@ public class Engine {
 			// Message is encrypted!
 			int i = mesg.cipherText.length();
 
-			// Use the first i number of keys to decrypt, then delete them from the keylist
-			
+			// Use the first i number of keys to decrypt, then delete them from
+			// the keylist
+
 			int[] key = new int[i];
-			for (int j = 0; j<i; j++){
+			for (int j = 0; j < i; j++) {
 				key[j] = keyList.get(0);
 				keyList.poll();
 			}
-			
+
 			if (key.length != mesg.message.length()) {
 				System.out.println("Dafk");
 				return;
 			}
 			mesg.decrypt(key);
 		}
-		parent.chatPanel.addMessage(mesg);
 		messageList.add(mesg);
+		parent.chatPanel.addMessage(mesg);
 		parent.updateKeys();
 	}
 
 	public void addKey(int key) {
-		//Lose complexity here! 
-		//Mod 95 to fit ASCII System!
+		// Lose complexity here!
+		// Mod 95 to fit ASCII System!
 		key = key % 95;
 		this.keyList.add(key);
 		printKeys();
 		parent.updateKeys();
 	}
-	
+
 	public void dhke(int amount) {
 		System.out.println("INITIATING DHKE: " + amount);
 		dhMode = true;
@@ -177,4 +178,18 @@ public class Engine {
 		System.out.println(s);
 	}
 
+	//Returns when you can't send
+	public boolean canSend() {
+		if (!dhMode) {
+			return true;
+		}
+		return false;
+	}
+
+	public void leaveChatroom() {
+		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
+		al.add(new BasicNameValuePair("LEAVE_CHATROOM", "TRUE"));
+		al.add(new BasicNameValuePair("NAME", name));
+		System.out.println(Functions.Post(al, URL));
+	}
 }

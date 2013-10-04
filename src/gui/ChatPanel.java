@@ -31,8 +31,10 @@ public class ChatPanel extends JPanel {
 
 	public void addMessage(Message m) {
 		// Formats the message
-		addLabel(m.sender + " - " + m.message, 20, y, DEFAULT_FONT);
+		addLabel(m.sender + " - " + m.message + (m.encrypted ? " (" + m.cipherText + ")": ""), 20, y, DEFAULT_FONT);
 		y += 20;
+		//Brings focus back to the textField
+		parent.focus();
 	}
 
 	public void addLabel(String s, int x, int y, Font font) {
