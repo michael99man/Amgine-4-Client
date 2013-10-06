@@ -17,6 +17,8 @@ import main.Engine;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 //JOB: To receive user input to create/join a chatroom
 public class StartWindow extends JFrame {
@@ -121,13 +123,26 @@ public class StartWindow extends JFrame {
 				}
 
 				if (success) {
-					//Creates a MainFrame and closes the window
-					MainFrame mf = new MainFrame(e);
-					e.setMainFrame(mf);
-					
-					//Starts listening
-					//Call only after chatroom has been created!
-					e.startThread();
+					try {
+						WaitingFrame wf = new WaitingFrame(e);
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+						wf.go();
+						//If client was told to join a chatroom
+						if (choice.getSelectedItem().equals("Join")){
+							wf.joined();
+						}
+						//Starts listening
+						//Call only after chatroom has been created!
+						e.startThread(wf, choice.getSelectedItem().equals("Create"));
+					} catch (NoSuchAlgorithmException e1) {
+						e1.printStackTrace();
+					} catch (InvalidKeySpecException e1) {
+						e1.printStackTrace();
+					}
 					
 					System.out.println("Closing window");
 					instance.dispose();

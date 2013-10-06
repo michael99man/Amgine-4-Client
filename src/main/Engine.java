@@ -1,8 +1,9 @@
 package main;
 
-import encryption.DHEngine;
 import gui.MainFrame;
+import gui.WaitingFrame;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -12,8 +13,9 @@ import org.apache.http.message.BasicNameValuePair;
 public class Engine {
 
 	// The url of the MainServlet
-	// public static final String BASEURL = "http://localhost:8080/Amgine_4/";
-	public static final String BASEURL = "https://amgine4-michael99man.rhcloud.com/";
+	public static final String BASEURL = "http://localhost:8080/Amgine_4/";
+	// public static final String BASEURL =
+	// "https://amgine4-michael99man.rhcloud.com/";
 
 	// The url of the chatroom
 	public String URL;
@@ -29,17 +31,26 @@ public class Engine {
 	// The plaintext you want to send. Stored when encryption array is not ready
 	public String tempMessage = "";
 
-	// While performing DHKE
-	public boolean dhMode;
-
-	// The DHKE Engine
-	public DHEngine dhe;
-
 	// This list holds all keys ever generated
 	public LinkedList<Integer> keyList = new LinkedList<Integer>();
 
 	// Holds all messages
 	public LinkedList<Message> messageList = new LinkedList<Message>();
+
+	// My public modulus
+	public BigInteger pubMod;
+
+	// My public exponent
+	public BigInteger pubExp;
+
+	// My private exponent
+	public BigInteger privExp;
+
+	// Other client's public modulus
+	public BigInteger otherPubMod;
+
+	// Other client's public exponent
+	public BigInteger otherPubExp;
 
 	public void setMainFrame(MainFrame mf) {
 		parent = mf;
@@ -47,15 +58,6 @@ public class Engine {
 
 	public Engine(String n) {
 		name = n;
-	}
-
-	// ONLY TO BE USED TO SEND AN ENCRYPTED STRING
-	public void send(String s, boolean e) {
-		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
-		al.add(new BasicNameValuePair("SEND_MESSAGE", s));
-		al.add(new BasicNameValuePair("NAME", name));
-		al.add(new BasicNameValuePair("ENCRYPTED", e ? "TRUE" : "FALSE"));
-		System.out.println(Functions.Post(al, URL));
 	}
 
 	public void formKey(String s) {
@@ -117,8 +119,8 @@ public class Engine {
 		return true;
 	}
 
-	public void startThread() {
-		PullThread pullThread = new PullThread(URL, this);
+	public void startThread(WaitingFrame wf, boolean create) {
+		PullThread pullThread = new PullThread(URL, this, wf, create);
 		new Thread(pullThread).start();
 	}
 
@@ -126,43 +128,10 @@ public class Engine {
 	public void push(Message mesg) {
 		if (mesg.encrypted) {
 			// Message is encrypted!
-			int i = mesg.cipherText.length();
-
-			// Use the first i number of keys to decrypt, then delete them from
-			// the keylist
-
-			int[] key = new int[i];
-			for (int j = 0; j < i; j++) {
-				key[j] = keyList.get(0);
-				keyList.poll();
-			}
-
-			if (key.length != mesg.message.length()) {
-				System.out.println("Dafk");
-				return;
-			}
-			mesg.decrypt(key);
+			mesg.decrypt(privExp, pubMod);
 		}
 		messageList.add(mesg);
 		parent.chatPanel.addMessage(mesg);
-		parent.updateKeys();
-	}
-
-	public void addKey(int key) {
-		// Lose complexity here!
-		// Mod 95 to fit ASCII System!
-		key = key % 95;
-		this.keyList.add(key);
-		printKeys();
-		parent.updateKeys();
-	}
-
-	public void dhke(int amount) {
-		System.out.println("INITIATING DHKE: " + amount);
-		dhMode = true;
-		parent.progressBar.setIndeterminate(false);
-		parent.progressBar.setMaximum(amount);
-		dhe = new DHEngine(this, amount, parent.progressBar);
 	}
 
 	public void printKeys() {
@@ -178,18 +147,31 @@ public class Engine {
 		System.out.println(s);
 	}
 
-	//Returns when you can't send
-	public boolean canSend() {
-		if (!dhMode) {
-			return true;
-		}
-		return false;
-	}
-
 	public void leaveChatroom() {
 		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
 		al.add(new BasicNameValuePair("LEAVE_CHATROOM", "TRUE"));
 		al.add(new BasicNameValuePair("NAME", name));
+		System.out.println(Functions.Post(al, URL));
+	}
+
+	// Sends the plaintext
+	public void send(String s, boolean encrypt) {
+		s = Functions.clearIllegal(s);
+
+		Message m = new Message(s, name);
+
+		m.encrypted = encrypt;
+		if (encrypt) {
+			m.cipherText = Functions.encrypt(s, otherPubExp, otherPubMod);
+		}
+		messageList.add(m);
+		parent.chatPanel.addMessage(m);
+
+		ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
+		al.add(new BasicNameValuePair("SEND_MESSAGE", encrypt ? m.cipherText
+				: m.message));
+		al.add(new BasicNameValuePair("NAME", name));
+		al.add(new BasicNameValuePair("ENCRYPTED", encrypt ? "TRUE" : "FALSE"));
 		System.out.println(Functions.Post(al, URL));
 	}
 }

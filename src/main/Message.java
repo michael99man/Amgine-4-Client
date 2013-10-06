@@ -1,5 +1,6 @@
 package main;
 
+import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -73,8 +74,8 @@ public class Message {
 		return msg;
 	}
 
-	public void decrypt(int[] key) {
+	public void decrypt(BigInteger privExp, BigInteger modulus) {
 		cipherText = message;
-		message = (Functions.decrypt(message, key));
+		message = (Functions.decrypt(message, privExp, modulus));
 	}
 }

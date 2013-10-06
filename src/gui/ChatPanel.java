@@ -12,12 +12,14 @@ import main.Message;
 public class ChatPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	private Engine engine;
 	private MainFrame parent;
 
 	private static Font DEFAULT_FONT = new Font("AppleGothic", Font.PLAIN, 15);
 	
 	private static Font TITLE_FONT = new Font("AppleGothic", Font.BOLD, 15);
+	
+	@SuppressWarnings("unused")
+	private Engine engine;
 	
 	private int y = 40;
 
@@ -47,7 +49,7 @@ public class ChatPanel extends JPanel {
 		add(label);
 		
 		if (y > getHeight()){
-			resize(100);
+			resize(20);
 		}
 		
 		parent.verticalMax();

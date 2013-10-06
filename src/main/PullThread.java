@@ -1,42 +1,39 @@
 package main;
 
+import gui.WaitingFrame;
+
 import java.awt.Toolkit;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-
 public class PullThread implements Runnable {
 
 	private String URL;
 	private Engine parent;
+	private WaitingFrame waitingFrame;
 
-	public PullThread(String url, Engine e) {
+	// Client is only waiting if it created the servlet; If it didn't, it would
+	// join automatically
+
+	public PullThread(String url, Engine e, WaitingFrame wf, boolean create) {
 		URL = url;
 		parent = e;
+		waitingFrame = wf;
 	}
 
 	@Override
 	public void run() {
 		while (true) {
-			if (parent.dhMode){
-				return;
-			}
-			
 			ArrayList<NameValuePair> al = new ArrayList<NameValuePair>();
 			al.add(new BasicNameValuePair("PULL", "true"));
 			al.add(new BasicNameValuePair("NAME", parent.name));
 			String r = Functions.Get(al, URL);
 
 			// Nothing new
-			if (r.equals("NOTHING_NEW"))  {
-				//Nothing new...
-			} else if (r.contains("DHKE_READY")){
-				//Detects that servlet has returned a message to initiate DHKE
-				
-				int amount = Integer.parseInt(r.substring(r.indexOf("(") + 1, r.indexOf(")")));
-				parent.dhke(amount);
+			if (r.equals("NOTHING_NEW")) {
+				// Nothing new...
 			} else {
 				String[] messages = r.split("\n");
 
@@ -44,9 +41,11 @@ public class PullThread implements Runnable {
 					// Parse each message in returned string
 					System.out.println("PARSING: " + m);
 					String mesg = m.substring(m.indexOf("(Message: ")
-							+ "(Message: ".length(), m.indexOf("(Encrypted: ") - 1);
+							+ "(Message: ".length(),
+							m.indexOf("(Encrypted: ") - 1);
 					String encrypt = m.substring(m.indexOf("(Encrypted: ")
-							+ "(Encrypted: ".length(), m.indexOf("(Sender: ") - 1);
+							+ "(Encrypted: ".length(),
+							m.indexOf("(Sender: ") - 1);
 					boolean encrypted = encrypt.equals("TRUE");
 					String sender = m.substring(m.indexOf("(Sender: ")
 							+ "(Sender: ".length(), m.indexOf("(Date: ") - 1);
@@ -56,14 +55,26 @@ public class PullThread implements Runnable {
 					String time = m.substring(
 							m.indexOf("(Time: ") + "(Time: ".length(),
 							m.length() - 1);
-					
+
 					System.out.println("RECEIVED MESSAGE - " + time + " - "
 							+ sender + ": \"" + mesg + "\"");
-
-					//This message will always be encrypted
-					Message msg = new Message(mesg, sender, date, time, encrypted);
+					// This message will always be encrypted
+					Message msg = new Message(mesg, sender, date, time,
+							encrypted);
 					Toolkit.getDefaultToolkit().beep();
-					parent.push(msg);			
+
+					String s = " has joined the chatroom!";
+					if (msg.message.contains(s) && msg.sender.equals("Server")) {
+						if (msg.message.contains(parent.name)) {
+							// Do nothing
+						} else {
+							System.out.println("Other client has joined!");
+							waitingFrame.joined();
+						}
+						parent.messageList.add(msg);
+					} else {
+						parent.push(msg);
+					}
 				}
 			}
 			try {
