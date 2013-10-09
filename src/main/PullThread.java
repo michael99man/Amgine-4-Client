@@ -65,7 +65,9 @@ public class PullThread implements Runnable {
 
 					String s = " has joined the chatroom!";
 					if (msg.message.contains(s) && msg.sender.equals("Server")) {
-						if (msg.message.contains(parent.name)) {
+						//Space is to prevent the false negative of this client's name being a superset of the other client's name
+						//e.g. Found when using names "Bobby" and "Bob"
+						if (msg.message.contains(parent.name + " ")) {
 							// Do nothing
 						} else {
 							System.out.println("Other client has joined!");

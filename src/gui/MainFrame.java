@@ -35,10 +35,6 @@ public class MainFrame extends JFrame {
 
 	private String chatroom;
 
-	// Name of the last sender
-	@SuppressWarnings("unused")
-	private String lastSender = "";
-
 	// The only message to be preserved when the view is refreshed;
 	public String entryMessage;
 
@@ -72,7 +68,7 @@ public class MainFrame extends JFrame {
 		chatPanel.setPreferredSize(new Dimension(450, 360));
 
 		panelScroller.setViewportView(chatPanel);
-		panelScroller.setBounds(15, 15, 460, 360);
+		panelScroller.setBounds(15, 15, 574, 360);
 		contentPane.add(panelScroller);
 
 		inputField = new JTextField();
